@@ -1,7 +1,7 @@
-local ts_utils = require("nvim-treesitter.ts_utils")
-local ts_parsers = require("nvim-treesitter.parsers")
-local ts_queries = require("nvim-treesitter.query")
-local utils = require("nvim-gps.utils")
+local ts_utils = require "nvim-treesitter.ts_utils"
+local ts_parsers = require "nvim-treesitter.parsers"
+local ts_queries = require "nvim-treesitter.query"
+local utils = require "nvim-gps.utils"
 
 local M = {}
 
@@ -18,7 +18,8 @@ local default_config = {
 	},
 	separator = ' > ',
 	depth = 0,
-	depth_limit_indicator = ".."
+	depth_limit_indicator = "..",
+  text_hl = "Comment" -- text color (link to hi-group)
 }
 
 -- Languages specific default configuration must be added to configs
@@ -43,7 +44,7 @@ local configs = {}
 
 local function setup_language_configs()
 	configs = {
-		["json"] = with_default_config({
+		["json"] = with_default_config {
 			icons = {
 				["array-name"] = ' ',
 				["object-name"] = ' ',
@@ -52,19 +53,19 @@ local function setup_language_configs()
 				["number-name"] = '# ',
 				["string-name"] = ' '
 			}
-		}),
-		["latex"] = with_default_config({
+		},
+		["latex"] = with_default_config {
 			icons = {
 				["title-name"] = "# ",
 				["label-name"] = " ",
 			},
-		}),
-		["norg"] = with_default_config({
+		},
+		["norg"] = with_default_config {
 			icons = {
 				["title-name"] = " ",
 			},
-		}),
-		["toml"] = with_default_config({
+		},
+		["toml"] = with_default_config {
 			icons = {
 				["table-name"] = ' ',
 				["array-name"] = ' ',
@@ -77,13 +78,13 @@ local function setup_language_configs()
 				["string-name"] = ' ',
 				["time-name"] = ' '
 			}
-		}),
-		["verilog"] = with_default_config({
+		},
+		["verilog"] = with_default_config {
 			icons = {
 				["module-name"] = ' '
 			}
-		}),
-		["yaml"] = with_default_config({
+		},
+		["yaml"] = with_default_config {
 			icons = {
 				["mapping-name"] = ' ',
 				["sequence-name"] = ' ',
@@ -93,8 +94,8 @@ local function setup_language_configs()
 				["float-name"] = ' ',
 				["string-name"] = ' '
 			}
-		}),
-		["yang"] = with_default_config({
+		},
+		["yang"] = with_default_config {
 			icons = {
 				["module-name"] = " ",
 				["augment-path"] = " ",
@@ -107,20 +108,20 @@ local function setup_language_configs()
 				["leaf-name"] = " ",
 				["action-name"] = " ",
 			}
-		}),
-		["scss"] = with_default_config({
+		},
+		["scss"] = with_default_config {
 			icons = {
 				["scss-name"] = "",
 				["scss-mixin-name"] = "@mixin ",
 				["scss-include-name"] = "@include ",
 				["scss-keyframes-name"] = "@keyframes ",
 			}
-		}),
-		["tsx"] = with_default_config({
+		},
+		["tsx"] = with_default_config {
 			icons = {
 				["hook-name"] = "ﯠ ",
 			}
-		}),
+		},
 	}
 end
 
@@ -132,8 +133,8 @@ local setup_complete = false
 
 local function default_transform(config, capture_name, capture_text)
 	return {
-		text = capture_text,
-		type = capture_name,
+ 		text = "%#" .. default_config.text_hl .. "#" .. capture_text .. "%*",
+ 		type = "%#" .. default_config.text_hl .. "#" .. capture_name .. "%*",
 		icon = config.icons[capture_name]
 	}
 end
@@ -202,18 +203,14 @@ local transform_lang = {
 		end
 	end,
 	["python"] = function(config, capture_name, capture_text)
-		if capture_name == "main-function" then
-			return default_transform(config, "function-name", "main")
-		else
-			return default_transform(config, capture_name, capture_text)
-		end
-	end,
+		return (capture_name == "main-function") and
+			default_transform(config, "function-name", "main") or
+			default_transform(config, capture_name, capture_text)
+  end,
 	["yang"] = function(config, capture_name, capture_text)
-		if capture_name == "keyword" then
-			return nil
-		else
-			return default_transform(config, capture_name, capture_text)
-		end
+		return (capture_name == "keyword") and
+			nil or
+			default_transform(config, capture_name, capture_text)
 	end
 }
 
@@ -252,6 +249,7 @@ function M.setup(user_config)
 	user_config = user_config or {}
 	default_config.separator = user_config.separator or default_config.separator
 	default_config.disable_icons = user_config.disable_icons or default_config.disable_icons
+  default_config.text_hl = user_config.text_hl or default_config.text_hl
 	default_config.icons = vim.tbl_extend("force", default_config.icons, user_config["icons"] or {})
 	setup_language_configs()
 	default_config.depth = user_config.depth or default_config.depth

@@ -1,4 +1,4 @@
-local ts_queries = require("nvim-treesitter.query")
+local ts_queries = require "nvim-treesitter.query"
 
 local M = {}
 
