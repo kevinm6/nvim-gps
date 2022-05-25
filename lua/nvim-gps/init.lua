@@ -337,7 +337,7 @@ function M.get_data()
 			text
 		)
 
-		if node_text ~= nil then
+		if node_text then
 			table.insert(node_data, pos, node_text)
 		end
 	end
@@ -406,7 +406,7 @@ function M.get_location(opts)
 	local disable_icons = config.disable_icons
 	local depth_limit_indicator = config.depth_limit_indicator
 
-	if opts ~= nil then
+	if opts then
 		depth = opts.depth or config.depth
 		separator = opts.separator or config.separator
 		disable_icons = opts.disable_icons or config.disable_icons
